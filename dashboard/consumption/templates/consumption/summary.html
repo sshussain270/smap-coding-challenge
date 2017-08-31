@@ -1,7 +1,188 @@
 {% extends 'consumption/layout.html' %}
 
 {% block content %}
+{% load staticfiles%}
 
-<h1>{{message}}</h1>
+<h1>Users</h1>
 
+
+{% if users %}
+
+<table border="1">
+    <thead>
+      <tr>
+        <th>User id</th>
+	<th>Area</th>
+	<th>Tariff</th>
+	<th>Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+{% for user in users %}
+ <tr>
+        <td>{{ user.user_id }}</td>
+	<td>{{ user.area }}</td>
+	<td>{{ user.tariff }}</td>
+	<td><a href="{% url 'detail' pk=user.pk %}"> View </a></td>
+ </tr>
+{% endfor %}
+
+
+</tbody>
+</table>
+
+<!--pagination for table-->
+<div class="pagination">
+    <span class="step-links">
+        {% if users.has_previous %}
+            <a href="?page={{ users.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ users.number }} of {{ users.paginator.num_pages }}.
+        </span>
+
+        {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}">next</a>
+        {% endif %}
+    </span>
+</div>
+
+
+
+{% else %}
+
+<p> No users found. </p>
+
+{% endif %}
+
+<h1> Total consumption </h1
+<!--chart for total consumption-->
+<div style="width:75%;">
+    <canvas id="canvas1"></canvas>
+</div>
+<h1> Average consumption </h1>
+<!-- chart for average consumption-->
+<div style="width:75%;">
+    <canvas id="canvas2"></canvas>
+</div>
+
+<script>
+   
+        var config1 = {
+            type: 'line',
+            data: {
+                labels: [
+
+               {% for aggregation in aggregations %}
+               "{{aggregation.date}}",
+               {% endfor %}
+                ],
+                datasets: [{
+                    label: "Total",
+                    backgroundColor: window.chartColors.red,
+                    borderColor: window.chartColors.red,
+                    data: [
+                        {% for aggregation in aggregations %}
+                        {{aggregation.total}},
+                        {% endfor %}
+                    ],
+                    fill: false,
+                },]
+            },
+            options: {
+                responsive: true,
+                title:{
+                    display:true,
+                    text:'Total Consumption Line Chart'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Date'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Energy Consumption(Wh)'
+                        }
+                    }]
+                }
+            }
+        };
+
+        var config2 = {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for aggregation in aggregations %}
+                    "{{aggregation.date}}",
+                    {% endfor %}
+                ],
+                datasets: [
+                {
+                    label: "Average",
+                    backgroundColor: window.chartColors.blue,
+                    borderColor: window.chartColors.blue,
+                    data: [
+                        {% for aggregation in aggregations %}
+                        {{aggregation.average}},
+                        {% endfor %}
+                    ],
+                    fill: false,
+                },]
+         },
+            options: {
+                responsive: true,
+                title:{
+                    display:true,
+                    text:'Average Consumption Line Chart'
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                hover: {
+                    mode: 'nearest',
+                    intersect: true
+                },
+             scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Date'
+                        }
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                           display: true,
+                            labelString: 'Energy Consumption (Wh)'
+                        }
+                    }]
+                }
+            }
+        };
+        window.onload = function() {
+            var ctx1 = document.getElementById("canvas1").getContext("2d");
+            window.myLine = new Chart(ctx1, config1);
+            var ctx2 = document.getElementById("canvas2").getContext("2d");
+            window.myLine = new Chart(ctx2, config2);
+        };
+  
+        var colorNames = Object.keys(window.chartColors);
+    </script>
 {% endblock %}
