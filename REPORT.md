@@ -47,7 +47,7 @@ It calculates average and sum total of data for all users' consumption and store
  
  1. Details of the user: user id, area, tariff
  
- 2. A line chart showing the consumption of the user over a period of datetime. The datetimes are minified to 5 equally distant datetimes from the total records in the database to keep the chart load to minimum.
+ 2. A line chart showing the consumption of the user over a period of datetime. The datetimes are minified to 5 equally distant dates from the total records in the database to keep the chart load to minimum.
  
  # Tests
 

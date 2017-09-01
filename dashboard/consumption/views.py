@@ -5,6 +5,7 @@ from django.shortcuts import render, get_list_or_404, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import *
 import datetime
+from django.db.models import Sum, Avg
 # Create your views here.
 
 
@@ -42,17 +43,22 @@ def detail(request, pk):
   user = get_object_or_404(UserData, pk=pk)
   consumptions = Consumption.objects.filter(user = user)
   if len(consumptions) > 5:
-      #return 5 equally distant date times
-      datetime_first = consumptions.first().datetime
-      datetime_last = consumptions.last().datetime
+      #return 5 equally distant dates
+      date_first = consumptions.first().datetime.date()
+      date_last = consumptions.last().datetime.date()
 
-      datetime_diff = (datetime_last-datetime_first).seconds
+      date_diff = (date_last-date_first).days
 
-      diff=  datetime_diff/5;
-      datetimes=[]
+      diff=  date_diff/5;
+      dates=[]
       for i in range(0,5):
-          datetimes.insert(i,datetime_first + i* datetime.timedelta(seconds=diff) )
-      consumptions = Consumption.objects.filter(datetime__in=datetimes, user = user)
+          dates.insert(i,date_first + i* datetime.timedelta(days=diff) )
+      results = []
+      for date in dates:
+          consumptions = Consumption.objects.filter(datetime__date=date, user = user).aggregate(Sum('consumption'))
+          results.append(Consumption(user = user, datetime = date, consumption = consumptions['consumption__sum']))
+      consumptions = results
   else:
+      #otherwise return all
       consumptions = Consumption.objects.filter(user=user)
   return render(request, 'consumption/detail.html', { 'user' : user, 'consumptions': consumptions })

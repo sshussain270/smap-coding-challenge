@@ -4,22 +4,19 @@ from django.db.models import Sum, Avg
 class Command(BaseCommand):
   help = 'Aggregates consumption data'
   def handle(self, *args, **options):
-      print("Aggregating consumption data...")
+      print("Aggregating consumption data. This might take a few minutes...")
       consumptions = Consumption.objects.all()
+      date_list = list(set([element.datetime.date() for element in consumptions]))
       if not consumptions:
           print("No user consumption data to aggregate.")
       else:
-          for consumption in consumptions:
-              all = Consumption.objects.filter(datetime__date = consumption.datetime.date())
-              total = all.aggregate(Sum('consumption'))
-              average = all.aggregate(Avg('consumption'))
-              date_exists = Aggregation.objects.filter(date = consumption.datetime.date())
-              if not date_exists:
-                  Aggregation.objects.create(date = consumption.datetime.date(), total = total['consumption__sum'], average = average['consumption__avg'])
-              else:
-                  data = Aggregation.objects.get(date = consumption.datetime.date())
-                  data.total = total['consumption__sum']
-                  data.average = average['consumption__avg']
-                  data.save()
+          data = []
+          date_seens = set()
+          for date in date_list:
+              if date not in date_seens:
+                  all = Consumption.objects.filter(datetime__date = date).aggregate(Sum('consumption'), Avg('consumption'))
+                  data.append(Aggregation(date = date, total = all['consumption__sum'], average = all['consumption__avg']))
+                  date_seens.add(date)
+          Aggregation.objects.bulk_create(data)
           print("Aggregation consumption data complete!")
 

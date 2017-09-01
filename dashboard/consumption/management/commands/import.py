@@ -22,20 +22,16 @@ class Command(BaseCommand):
           print("No user data found")
       else:
           print("User data import complete!")
-      print("Importing consumption data...")
+      print("Importing consumption data. This might take a few seconds...")
       users = UserData.objects.all()
       if users:
           for user in users:
               path_consumption = "../data/consumption/" + str(user.user_id) + ".csv"
               with open(path_consumption) as f:
-                  reader = csv.reader(f)
-                  has_header = csv.Sniffer().has_header(f.read(1024))
-                  f.seek(0)  # rewind
-                  incsv = csv.reader(f)
-                  if has_header:
-                      next(incsv)  # skip header row
-                  for row in reader:
-                      Consumption.objects.create(user = user, datetime=row[0], consumption= row[1])
+                  reader = csv.reader(f, delimiter=',')
+                  header = next(reader)
+                  Consumption.objects.bulk_create([Consumption(user = user, datetime=row[0], consumption= row[1]) for row in reader])
+
           print("Consumption data import complete!")
       else:
           print("No user data to import consumption for.")          

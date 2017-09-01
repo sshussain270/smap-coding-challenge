@@ -32,12 +32,13 @@ class CommandsTestCase(TestCase):
 
         args = []
         opts = {}
-        call_command('fix import', *args, **opts)
+        call_command('import', *args, **opts)
     def test_aggregate(self):
         "Test aggregate command"
         args = []
         opts = {}
-        call_command('fix aggregate', *args, **opts)
+        call_command('import', *args, **opts) #fresh import data to aggregate
+        call_command('aggregate', *args, **opts)
 
 
 class ViewsTestCase(TestCase):
@@ -45,7 +46,7 @@ class ViewsTestCase(TestCase):
         response = self.client.get('/summary/', follow=True)
         self.assertEqual(response.status_code, 200)
     def test_call_view_detail(self):
-        UserData.objects.create(user_id=1, area="London", tariff="241")
+        UserData.objects.create(user_id=1, area="London", tariff="241") #create dummy data
         test_user = UserData.objects.all().first()
         response = self.client.get('/detail/' + str(test_user.pk) + '/', follow=True)
         self.assertEqual(response.status_code, 200)

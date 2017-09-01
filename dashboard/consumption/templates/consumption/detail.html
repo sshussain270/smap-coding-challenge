@@ -8,10 +8,6 @@
 <p><strong>Area:</strong> {{user.area}}</p>
 <p><strong>Tariff:</strong> {{user.tariff}} </p>
 
-                        {% for consumption in consumptions %}
-                        {{ consumption.consumption }}
-                        {% endfor %}
-
 <h1>User's Consumption</h1>
 <!--chart for consumption-->
 <div style="width:75%;">
@@ -33,7 +29,7 @@
                     borderColor: window.chartColors.red,
                     data: [
                         {% for consumption in consumptions %}
-                        {{ consumption.consumption }}
+                        {{ consumption.consumption }},
                         {% endfor %}
                     ],
                     fill: false,
